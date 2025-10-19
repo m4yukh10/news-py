@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Form, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+import os
 
 import models, schemas
 from database import engine, SessionLocal
@@ -10,6 +11,10 @@ import uuid
 
 from models import News
 models.Base.metadata.create_all(engine)
+
+cloudinary.config(
+    cloudinary_url=os.getenv('CLOUDINARY_URL', 'cloudinary://119213622899343:Ys4fHiTJKoWU76ac48Ly0Te-Tz8@dlg3de1hq')
+)
 
 
 app = FastAPI()
