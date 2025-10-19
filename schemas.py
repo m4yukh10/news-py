@@ -9,7 +9,16 @@ class NewsResponse(BaseModel):
     author: str
     content: str
     image_link: str
-    
+
+    class Config:
+        orm_mode=True
+
+class News(BaseModel):
+    id: UUID
+    author: str
+    content: str
+    image_link: str
+
     class Config:
         orm_mode=True
     
