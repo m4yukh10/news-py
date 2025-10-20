@@ -25,8 +25,8 @@ function NewsForm({ onSubmit, onCancel }) {
     e.preventDefault();
     setError('');
 
-    if (!author.trim() || !content.trim() || !image) {
-      setError('Please fill in all fields');
+    if (!author.trim() || !content.trim()) {
+      setError('Please fill in author and content fields');
       return;
     }
 
@@ -35,7 +35,9 @@ function NewsForm({ onSubmit, onCancel }) {
     const formData = new FormData();
     formData.append('author', author);
     formData.append('content', content);
-    formData.append('image', image);
+    if (image) {
+      formData.append('image', image);
+    }
 
     const success = await onSubmit(formData);
 
@@ -81,7 +83,7 @@ function NewsForm({ onSubmit, onCancel }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="image">Upload Image</label>
+            <label htmlFor="image">Upload Image (Optional)</label>
             <input
               type="file"
               id="image"

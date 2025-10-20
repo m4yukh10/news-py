@@ -39,19 +39,20 @@ def get_db():
 async def create_news(
     author: str = Form(...),
     content: str = Form(...),
-    image: UploadFile = File(...),
+    image: UploadFile = File(None),
     db: Session = Depends(get_db)
 ):
-    # Upload image to Cloudinary
-    result = cloudinary.uploader.upload(
-        image.file,
-        folder="news_images",
-        public_id=str(uuid.uuid4()),
-        overwrite=True
-    )
-    image_url = result.get("secure_url")
+    image_url = None
 
-    # Save in DB
+    if image:
+        result = cloudinary.uploader.upload(
+            image.file,
+            folder="news_images",
+            public_id=str(uuid.uuid4()),
+            overwrite=True
+        )
+        image_url = result.get("secure_url")
+
     news_item = News(author=author, content=content, image_link=image_url)
     db.add(news_item)
     db.commit()
