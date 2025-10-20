@@ -1,27 +1,26 @@
 from fastapi import FastAPI, UploadFile, File, Form, Depends
-from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import os
-
+from fastapi.middleware.cors import CORSMiddleware
 import models, schemas
 from database import engine, SessionLocal
 import cloudinary
 import cloudinary.uploader
 import uuid
+from dotenv import load_dotenv
+
 
 from models import News
 models.Base.metadata.create_all(engine)
 
-cloudinary.config(
-    cloudinary_url=os.getenv('CLOUDINARY_URL', 'cloudinary://119213622899343:Ys4fHiTJKoWU76ac48Ly0Te-Tz8@dlg3de1hq')
-)
 
 
 app = FastAPI()
 
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,24 +34,22 @@ def get_db():
     finally:
         db.close()
 
-@app.post("/news/", response_model=schemas.NewsResponse)
+load_dotenv()        
+config = cloudinary.config(secure=True)
+
+@app.post("/news", response_model=schemas.NewsResponse)
 async def create_news(
     author: str = Form(...),
     content: str = Form(...),
-    image: UploadFile = File(None),
+    image: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    image_url = None
-
-    if image:
-        result = cloudinary.uploader.upload(
-            image.file,
-            folder="news_images",
-            public_id=str(uuid.uuid4()),
-            overwrite=True
-        )
-        image_url = result.get("secure_url")
-
+    contents = await image.read()
+    # Upload image to Cloudinary
+    
+    upload_response = cloudinary.uploader.upload(contents, resource_type="image")
+    image_url = upload_response["secure_url"]    
+    # Save in DB
     news_item = News(author=author, content=content, image_link=image_url)
     db.add(news_item)
     db.commit()
@@ -60,7 +57,7 @@ async def create_news(
 
     return news_item
 
-@app.get("/all", response_model=list[schemas.News])
+@app.get("/all", response_model=list[schemas.NewsResponse])
 def getAll(db: Session = Depends(get_db)):
     allNews = db.query(models.News).all()
     
