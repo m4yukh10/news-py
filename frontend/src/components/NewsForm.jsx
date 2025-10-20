@@ -30,14 +30,17 @@ function NewsForm({ onSubmit, onCancel }) {
       return;
     }
 
+    if (!image) {
+      setError('Please upload an image');
+      return;
+    }
+
     setSubmitting(true);
 
     const formData = new FormData();
     formData.append('author', author);
     formData.append('content', content);
-    if (image) {
-      formData.append('image', image);
-    }
+    formData.append('image', image);
 
     const success = await onSubmit(formData);
 
@@ -83,7 +86,7 @@ function NewsForm({ onSubmit, onCancel }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="image">Upload Image (Optional)</label>
+            <label htmlFor="image">Upload Image</label>
             <input
               type="file"
               id="image"
